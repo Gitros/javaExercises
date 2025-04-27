@@ -1,32 +1,33 @@
+
+class Pula {
+    int liczba_talerzy;
+    public Pula(int liczba_talerzy) {
+        this.liczba_talerzy = liczba_talerzy;
+    }
+}
+
 class Pomywacz extends Thread {
 
-    // liczba zawodników – mogłaby być zdefiniowana również w klasie Zawody
     static int liczba_pomywaczy = 3;
+    static Pula sterta = new Pula(30);
+    int numer;
+    static int wyniki[] = new int[liczba_pomywaczy];
 
-    // liczba talerzy do umycia - identyczna dla każdego zawodnika
-    static int liczba_talerzy = 20;
-
-    int numer; // numer zawodnika
-    int umytych; // liczba już umytych talerzy
-
-    // konstruktor
     Pomywacz(int i){
-        // nadanie początkowych wartości zmiennym obiektu
         numer = i;
-        umytych = 0;
     }
 
     public void run() {
-        // odpowiednia pętla:
-        while(umytych < liczba_talerzy){
-            // 1) zwiększenie licznika umytych,
-            umytych++;
-            // 2) losowa przerwa w działaniu,
+        while(sterta.liczba_talerzy > 0){
+            sterta.liczba_talerzy--;
             try {
                 sleep(200 + (long)(Math.random() * 600));
             } catch (Exception e) { System.out.println(e); }
-            // 3) wypisanie tekstu o umyciu
-            System.out.println("Pomywacz nr " + numer + "umył talerz " + umytych);
+            wyniki[numer]++;
+            for(int i = 0; i < liczba_pomywaczy; i++) {
+                System.out.print("P" + (i + 1) + ": " + wyniki[i] + " | ");
+            }
+            System.out.println();
         }
         System.out.println("Pomywacz nr " + numer + " Zakończył pracę");
     }
@@ -34,8 +35,7 @@ class Pomywacz extends Thread {
 
 public class Zawody{
     public static void main(String[] args){
-        // utworzenie obiektów-wątków klasy Pomywacz i ich uruchomienie
-        for(int i = 1; i <= Pomywacz.liczba_pomywaczy; i++){
+        for(int i = 0; i < Pomywacz.liczba_pomywaczy; i++){
             Pomywacz p = new Pomywacz(i);
             p.start();
         }
