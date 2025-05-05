@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import java.io.*;
 import java.util.*;
 
 // klasa reprezentujaca jednego abonenta
@@ -73,9 +74,9 @@ class PanelAbonenta extends JPanel {
 class ListaAbonentow extends JPanel
 {
     // kontener z listą abonentów
-    private ArrayList<Abonent> m_abonenci = new ArrayList<Abonent>();
+    public ArrayList<Abonent> m_abonenci = new ArrayList<Abonent>();
     // obiekt widoku listy
-    private JList m_lista = new JList();
+    public JList m_lista = new JList();
 
     public ListaAbonentow() {
 
@@ -254,6 +255,76 @@ class Centrala extends JFrame implements ActionListener {
         setLocation(50, 100);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        odczytajListe();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                zapiszListe();
+                System.exit(0);
+            }
+        });
+
+        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getRootPane().getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), "odczytajListe");
+        actionMap.put("odczytajListe", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                odczytajListe();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK), "zapiszListe");
+        actionMap.put("zapiszListe", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                zapiszListe();
+            }
+        });
+    }
+
+    private void zapiszListe() {
+        File plik = new File("abonenci.txt");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(plik))) {
+            writer.write(String.join(",", Abonent.ETYKIETY) + "\n");
+            for (Abonent abonent : m_listaAbonentow.m_abonenci) {
+                StringBuilder line = new StringBuilder();
+                for (int i = 0; i < Abonent.ETYKIETY.length; i++) {
+                    line.append(abonent.get(i)).append(i < Abonent.ETYKIETY.length - 1 ? "," : "");
+                }
+                line.append("\n");
+                writer.write(line.toString());
+            }
+            JOptionPane.showMessageDialog(this, "Dane zostały zapisane.", "Zapisano", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Błąd zapisu: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+    private void odczytajListe() {
+        File plik = new File("abonenci.txt");
+        if (plik.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(plik))) {
+                String line;
+                reader.readLine();
+
+                ArrayList<Abonent> abonenci = new ArrayList<>();
+                while ((line = reader.readLine()) != null) {
+                    String[] dane = line.split(",");
+                    abonenci.add(new Abonent(dane));
+                }
+                m_listaAbonentow.m_abonenci = abonenci;
+                m_listaAbonentow.m_lista.setListData(abonenci.toArray());
+
+                JOptionPane.showMessageDialog(this, "Lista abonentów została załadowana.", "Załadowano", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Błąd odczytu: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Plik nie istnieje.", "Błąd", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void actionPerformed(ActionEvent e)
@@ -284,6 +355,12 @@ class Centrala extends JFrame implements ActionListener {
             if(index != -1) {
                 m_listaAbonentow.usun(index);
             }
+        }
+        if(e.getSource() == zapiszListe) {
+            zapiszListe();
+        }
+        if(e.getSource() == odczytajListe) {
+            odczytajListe();
         }
     }
 
