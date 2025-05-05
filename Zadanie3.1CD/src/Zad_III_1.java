@@ -12,9 +12,10 @@ public class Zad_III_1 {
 }
 
 class FileBrowser extends JFrame implements ActionListener{
+    private String obecneKodowanie = "UTF-8";
     JTextField nazwa;
     JTextArea zawartosc;
-    JButton wczytaj, zapisz;
+    JButton wczytaj, zapisz, zmienKodowanie;
     public FileBrowser() { super("File Browser"); }
     
     public void init()
@@ -29,23 +30,32 @@ class FileBrowser extends JFrame implements ActionListener{
         zapisz.addActionListener(this);
         wczytaj = new JButton("Wczytaj");
         wczytaj.addActionListener(this);
+        zmienKodowanie = new JButton("Zmien Kodowanie");
+        zmienKodowanie.addActionListener(this);
         
         add(nazwa);
         add(wczytaj);
         add(zapisz);
+        add(zmienKodowanie);
         add(new JScrollPane(zawartosc));                       
     }
     
     private void czytaj(File plik)
     {
         try {
-            if(!plik.exists()|| !plik.isFile())
+            if(!plik.exists()) {
                 zawartosc.setText(plik.getName()+" - taki plik nie istnieje");
-            else
+            } else if (plik.isDirectory()) {
+                File[] files = plik.listFiles();
+                if(files != null) {
+                    zawartosc.setText("Zawartość: \n");
+                    for(File f : files) {
+                        zawartosc.append(f.getName()+ (f.isDirectory() ? " (Folder)" : "") + "\n");
+                    }
+                }
+            } else
             {
-                BufferedReader in = new BufferedReader
-                                            (new InputStreamReader
-                                                    (new FileInputStream(plik)));
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(plik), obecneKodowanie));
                 zawartosc.setText(null);
                 String linia;                
                 while(true)  {
@@ -76,14 +86,26 @@ class FileBrowser extends JFrame implements ActionListener{
         // można poeksperymentować z innymi klasami strumieni tekstowych
     }
 
+    private void zmienKodowanie() {
+        String kodowanie = JOptionPane.showInputDialog(this, "Podaj kodowanie:", "Zmien kodowanie", JOptionPane.QUESTION_MESSAGE);
+
+        if(kodowanie != null && !kodowanie.trim().isEmpty()) {
+            obecneKodowanie = kodowanie;
+        } else {
+            JOptionPane.showMessageDialog(this, "Nieprawidłowe kodowanie", "Zmien kodowanie", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String nazwaPliku = nazwa.getText();
         File plik = new File(nazwaPliku);
         if (e.getSource()==wczytaj)
             czytaj(plik);
-        else
+        else if (e.getSource()==zapisz)
             zapisz(plik);
+        else if (e.getSource()==zmienKodowanie)
+            zmienKodowanie();
     }
     
 }
