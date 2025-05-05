@@ -11,6 +11,7 @@ class Notepad extends JFrame
   private JMenuItem open = new JMenuItem("Open");
   private JMenuItem save = new JMenuItem("Save");
   private JMenuItem saveAs = new JMenuItem("Save as");
+  private JMenuItem newFile = new JMenuItem("New file");
   private JTextArea text = new JTextArea();
   private JScrollPane pScroll = new JScrollPane(
       text, 
@@ -52,6 +53,17 @@ class Notepad extends JFrame
     public void actionPerformed(ActionEvent e)
     {
       saveAsFile();
+    }
+  }
+
+// -------------------------------------------
+
+  // klasa obslugi przycisku save as
+  class NewFile implements ActionListener
+  {
+    public void actionPerformed(ActionEvent e)
+    {
+      createNewFile();
     }
   }
 
@@ -100,6 +112,20 @@ class Notepad extends JFrame
       saveFile();
     }
   }
+
+  private void createNewFile()
+  {
+    if(filename != null) {
+      int option = JOptionPane.showConfirmDialog(this, "Czy chcesz zapisać zmiany?", "Zapisz zmiany", JOptionPane.YES_NO_CANCEL_OPTION);
+      if(option == JOptionPane.YES_OPTION) {
+        saveFile();
+      } else if(option == JOptionPane.CANCEL_OPTION) {
+        return;
+      }
+    }
+    text.setText("");
+    filename = null;
+  }
   
 // -------------------------------------------
 
@@ -114,6 +140,7 @@ class Notepad extends JFrame
     menu.add(open);
     menu.add(save);
     menu.add(saveAs);
+    menu.add(newFile);
     menuBar.add(menu);
     this.setJMenuBar(menuBar);
     
@@ -123,6 +150,7 @@ class Notepad extends JFrame
     open.addActionListener(new OpenFile());
     save.addActionListener(new SaveFile());
     saveAs.addActionListener(new SaveAsFile());
+    newFile.addActionListener(new NewFile());
 
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     setSize(500,500);
