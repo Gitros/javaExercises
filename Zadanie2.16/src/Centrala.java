@@ -91,6 +91,9 @@ class ListaAbonentow extends JPanel
         m_abonenci.add(new Abonent(new String[]{"Jan", "Kowalski","111","222","333","444","555"}));
         m_abonenci.add(new Abonent(new String[]{"Agata", "Kowalska","1111","2222","3333","4444","5555"}));
         m_lista.setListData(m_abonenci.toArray());
+
+        JScrollPane scroll = new JScrollPane(m_lista);
+        add(scroll, BorderLayout.CENTER);
     }
 
     public void zapiszZmiany(String[] dane) {
@@ -103,6 +106,15 @@ class ListaAbonentow extends JPanel
          *
          */
 
+        int wybranyIndex = m_lista.getSelectedIndex();
+        if(wybranyIndex == -1) {
+            m_abonenci.add(new Abonent(dane));
+        } else {
+            for (int i = 0; i < Abonent.ETYKIETY.length; i++) {
+                m_abonenci.get(wybranyIndex).set(i, dane[i]);
+            }
+        }
+        m_lista.setListData(m_abonenci.toArray());
     }
 
     public void usun(int i) {
@@ -110,7 +122,10 @@ class ListaAbonentow extends JPanel
         /*
          * Usuwa z kolekcji i odświeża listę (w tym zaznaczenie elementu)
          */
-
+        if(i >= 0 && i < m_abonenci.size()) {
+            m_abonenci.remove(i);
+            m_lista.setListData(m_abonenci.toArray());
+        }
     }
 
     // zwraca indeks elementu wybranego w liście
@@ -160,6 +175,8 @@ class OknoAbonenta extends JDialog implements ActionListener {
         /*
         do napisania obsługa zatwierdzenia zmian (6.1)
         */
+        zapiszZmiany();
+        dispose();
 
     }
 
@@ -196,12 +213,31 @@ class Centrala extends JFrame implements ActionListener {
         add(glowny);
         // do napisania (2)
         /* zbudowanie odpowiedniego menu */
+
         JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Program");
+
+        JMenu menuProgram = new JMenu("Program");
         zamknij = new JMenuItem("Zamknij");
         zamknij.addActionListener(this);
-        menu.add(zamknij);
-        menuBar.add(menu);
+        menuProgram.add(zamknij);
+
+        JMenu menuOperacje = new JMenu("Operacje");
+
+        dodaj = new JMenuItem("Dodaj abonenta");
+        dodaj.addActionListener(this);
+        menuOperacje.add(dodaj);
+
+        edytuj = new JMenuItem("Edytuj abonenta");
+        edytuj.addActionListener(this);
+        menuOperacje.add(edytuj);
+
+        usun = new JMenuItem("Usun abonenta");
+        usun.addActionListener(this);
+        menuOperacje.add(usun);
+
+        menuBar.add(menuProgram);
+        menuBar.add(menuOperacje);
+
         setJMenuBar(menuBar);
 
 
@@ -215,12 +251,31 @@ class Centrala extends JFrame implements ActionListener {
     {
         // do napisania obsługa menu:
         // polecenia Dodaj Abonenta (3)
+        if (e.getSource() == dodaj) {
+            m_listaAbonentow.setIndeksAbonenta(-1);
+            OknoAbonenta okno = new OknoAbonenta(this);
+            okno.setVisible(true);
+        }
         // polecenia Zamknij (8)
         if(e.getSource() == zamknij) {
             System.exit(0);
         }
         // polecenia Edytuj (5)
+        if(e.getSource() == edytuj) {
+            int index = m_listaAbonentow.getIndeksAbonenta();
+            if(index != -1) {
+                OknoAbonenta okno = new OknoAbonenta(this);
+                okno.setEdytowany(m_listaAbonentow.getAbonent());
+                okno.setVisible(true);
+            }
+        }
         // polecenia Usun (7.1) oraz (7.2) implementacja metody usun() z klasy ListaAbonentow
+        if(e.getSource() == usun) {
+            int index = m_listaAbonentow.getIndeksAbonenta();
+            if(index != -1) {
+                m_listaAbonentow.usun(index);
+            }
+        }
     }
 
     public ListaAbonentow getListaAbonentow() {
