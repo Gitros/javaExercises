@@ -1,5 +1,3 @@
-package zad_II_16_0;
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -11,13 +9,13 @@ import java.util.*;
 class Abonent {
 
     public final static String[] ETYKIETY = {
-        "Imie",
-        "Nazwisko",
-        "Numer telefonu",
-        "Ilosc darmowych minut",
-        "Oplata abonentowa",
-        "Cena za minute w sieci",
-        "Cena za minute poza siecia"
+            "Imie",
+            "Nazwisko",
+            "Numer telefonu",
+            "Ilosc darmowych minut",
+            "Oplata abonentowa",
+            "Cena za minute w sieci",
+            "Cena za minute poza siecia"
     };
     private HashMap<String,String> m_data = new HashMap<String,String>();
 
@@ -38,7 +36,7 @@ class Abonent {
 
     public String toString() {
         return get(0) + " " + get(1);
-    }    
+    }
 }
 
 // --------------------------------------------------------------------
@@ -46,7 +44,7 @@ class Abonent {
 // klasa panelu wyswietlania/wprowadzania nowego abonenta
 // panel umieścimy w oknie klasy OknoAbonenta
 class PanelAbonenta extends JPanel {
-   
+
     // tablica pól tekstowych do edycji danych abonenta
     private JTextField[] m_pola = new JTextField[Abonent.ETYKIETY.length];
 
@@ -64,9 +62,9 @@ class PanelAbonenta extends JPanel {
         // definiuje obramowanie
         TitledBorder border = new TitledBorder("Dane abonenta");
         border.setTitleColor(Color.RED);
-        setBorder(border);        
+        setBorder(border);
     }
-    
+
     public String getPole(int i) { return m_pola[i].getText(); }
     public void setPole(int i, String value) { m_pola[i].setText(value); }
 }
@@ -78,22 +76,22 @@ class ListaAbonentow extends JPanel
     // kontener z listą abonentów
     private ArrayList<Abonent> m_abonenci = new ArrayList<Abonent>();
     // obiekt widoku listy
-    private JList m_lista = new JList();    
+    private JList m_lista = new JList();
 
-    public ListaAbonentow() {        
+    public ListaAbonentow() {
 
-        setLayout(new BorderLayout());        
+        setLayout(new BorderLayout());
 
-     // do napisania (1)
-     // wyposażenie listy w obramowanie i możliwość scrollowania           
-     // i umieszczenie jej w panelu  
-     
-     
-     // dane do testów
+        // do napisania (1)
+        // wyposażenie listy w obramowanie i możliwość scrollowania
+        // i umieszczenie jej w panelu
+
+
+        // dane do testów
         m_abonenci.add(new Abonent(new String[]{"Jan", "Kowalski","111","222","333","444","555"}));
         m_abonenci.add(new Abonent(new String[]{"Agata", "Kowalska","1111","2222","3333","4444","5555"}));
-        m_lista.setListData(m_abonenci.toArray());        
-    }        
+        m_lista.setListData(m_abonenci.toArray());
+    }
 
     public void zapiszZmiany(String[] dane) {
         // do napisania (6.2)
@@ -102,34 +100,34 @@ class ListaAbonentow extends JPanel
          * aktualizacja lub dodanie elementu do kolekcji związanej z listą.
          * Odświeżenie widoku listy (w tym wybranego elementu)
          * Należy wykorzystać metody klas ArrayList oraz Abonent.
-         * 
-        */
-        
+         *
+         */
+
     }
 
     public void usun(int i) {
-      // do napisania (7.2)
+        // do napisania (7.2)
         /*
          * Usuwa z kolekcji i odświeża listę (w tym zaznaczenie elementu)
-        */
-        
+         */
+
     }
 
     // zwraca indeks elementu wybranego w liście
     public int getIndeksAbonenta() { return m_lista.getSelectedIndex(); }
-    
-    public void setIndeksAbonenta(int i) { 
-        if(i >= 0) m_lista.setSelectedIndex(i); 
+
+    public void setIndeksAbonenta(int i) {
+        if(i >= 0) m_lista.setSelectedIndex(i);
         else m_lista.clearSelection();
     }
-    
+
     public Abonent getAbonent() { return m_abonenci.get(m_lista.getSelectedIndex()); }
-    
+
 }
 // --------------------------------------------------------------------
 // klasa reprezentująca okno dialogowe
 // wewnątrz którego będzie panel edycji abonenta
-class OknoAbonenta extends JDialog implements ActionListener { 
+class OknoAbonenta extends JDialog implements ActionListener {
 
     private Centrala centrala;
     private PanelAbonenta panel;
@@ -137,25 +135,32 @@ class OknoAbonenta extends JDialog implements ActionListener {
 
     public OknoAbonenta(Centrala c) {
         centrala = c;
-        
+
         setSize(400, 280);
         setLocation(50, 100);
         setLayout(new FlowLayout());
         setModal(true);
-        
+
         /* do napisania (4):
          * wstawić panel abonenta i przycisk "Zatwierdź"
-        */
-        
+         */
+
+        panel = new PanelAbonenta(c);
+        add(panel);
+
+        zatwierdz = new JButton("Zatwierdz");
+        zatwierdz.addActionListener(this);
+        add(zatwierdz);
+
     }
-        
+
     public void actionPerformed(ActionEvent e) {
-      // póki co tylko obsługa zatwierdzenia zmian
-      // (reakcja na wcisnięcie przycisku "Zatwierdź")
+        // póki co tylko obsługa zatwierdzenia zmian
+        // (reakcja na wcisnięcie przycisku "Zatwierdź")
         /*
         do napisania obsługa zatwierdzenia zmian (6.1)
         */
-        
+
     }
 
     // zapisuje wartości z panelu do listy abonentów
@@ -170,7 +175,7 @@ class OknoAbonenta extends JDialog implements ActionListener {
     public void setEdytowany(Abonent abonent) {
         for(int i=0; i<Abonent.ETYKIETY.length; i++) panel.setPole(i,abonent.get(i));
     }
-        
+
 }
 
 class Centrala extends JFrame implements ActionListener {
@@ -181,19 +186,27 @@ class Centrala extends JFrame implements ActionListener {
     private ListaAbonentow m_listaAbonentow = new ListaAbonentow();
 
     private JMenuItem zamknij, dodaj, edytuj, usun;
-    
+
     public Centrala()
     {
-        super("Lista abonentow");        
+        super("Lista abonentow");
 
         JPanel glowny = new JPanel(new GridLayout(1,1,5,5));
         glowny.add(m_listaAbonentow);
         add(glowny);
-      // do napisania (2)
+        // do napisania (2)
         /* zbudowanie odpowiedniego menu */
-        
-        
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("Program");
+        zamknij = new JMenuItem("Zamknij");
+        zamknij.addActionListener(this);
+        menu.add(zamknij);
+        menuBar.add(menu);
+        setJMenuBar(menuBar);
+
+
         setSize(400,300);
+        setLocation(50, 100);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
@@ -203,17 +216,20 @@ class Centrala extends JFrame implements ActionListener {
         // do napisania obsługa menu:
         // polecenia Dodaj Abonenta (3)
         // polecenia Zamknij (8)
+        if(e.getSource() == zamknij) {
+            System.exit(0);
+        }
         // polecenia Edytuj (5)
         // polecenia Usun (7.1) oraz (7.2) implementacja metody usun() z klasy ListaAbonentow
     }
 
     public ListaAbonentow getListaAbonentow() {
         return m_listaAbonentow;
-    }    
-    
+    }
+
     public static void main(String[] args)
     {
         new Centrala();
-    }        
-    
+    }
+
 }
