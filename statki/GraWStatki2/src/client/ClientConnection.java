@@ -20,7 +20,7 @@ public class ClientConnection {
         for (Ship ship : ships) {
             out.println(serializeShip(ship));
         }
-        out.println("READY"); // sygnał końca transmisji
+        out.println("READY");
     }
 
     private String serializeShip(Ship ship) {
@@ -33,12 +33,18 @@ public class ClientConnection {
 
     public String sendShot(int row, int col) throws IOException {
         out.println(row + "," + col);
-        return in.readLine(); // HIT / MISS / END
+        String response = in.readLine();
+        if (response == null) {
+            throw new IOException("Brak odpowiedzi z serwera.");
+        }
+        return response;
     }
 
     public void close() {
         try {
             out.println("END");
+            out.close();
+            in.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();

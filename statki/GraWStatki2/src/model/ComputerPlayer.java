@@ -23,6 +23,7 @@ public class ComputerPlayer extends Player {
         Coordinate coord;
         if (!targetQueue.isEmpty()) {
             coord = targetQueue.poll();
+            remainingShots.remove(coord);
         } else {
             int idx = rng.nextInt(remainingShots.size());
             coord = remainingShots.remove(idx);

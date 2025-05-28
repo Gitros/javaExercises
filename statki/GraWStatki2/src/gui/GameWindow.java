@@ -5,7 +5,9 @@ import model.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class GameWindow extends JFrame {
     private final int boardSize = 10;
@@ -14,6 +16,9 @@ public class GameWindow extends JFrame {
     private JButton[][] enemyButtons = new JButton[boardSize][boardSize];
     private ClientConnection connection;
     private JLabel statusLabel;
+    private JLabel timerLabel;
+    private volatile boolean gameRunning = true;
+
 
     public GameWindow(Board playerBoard) {
         setTitle("Gra w Statki – Klient");
@@ -32,16 +37,17 @@ public class GameWindow extends JFrame {
         JPanel content = new JPanel(new BorderLayout());
         content.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Plansze gracza i przeciwnika
         JPanel boardsPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         boardsPanel.add(createBoardPanel("Twoja plansza", playerButtons, false, playerBoard));
         boardsPanel.add(createBoardPanel("Plansza przeciwnika", enemyButtons, true, null));
         content.add(boardsPanel, BorderLayout.CENTER);
 
-        // Pasek statusu
         statusLabel = new JLabel("Wybierz pole, aby strzelić.", SwingConstants.CENTER);
+        timerLabel = new JLabel("⏱️ Czas gry: 00:00", SwingConstants.CENTER);
+        content.add(timerLabel, BorderLayout.NORTH);
         content.add(statusLabel, BorderLayout.SOUTH);
 
+        startGameTimer();
         setContentPane(content);
         setVisible(true);
     }
@@ -90,39 +96,36 @@ public class GameWindow extends JFrame {
         boardPanel.add(container, BorderLayout.CENTER);
         return boardPanel;
     }
+
     private void handlePlayerShot(int row, int col, JButton button) {
         try {
             String response = connection.sendShot(row, col);
-            String[] parts = response.split("\\|");
 
-            boolean isWin = parts[0].equals("END");
-            boolean isLose = parts[0].equals("LOSE");
-
-            boolean playerHit = false;
-            boolean playerSankShip = false;
-            boolean aiHit = false;
-            boolean aiSankShip = false;
-            Coordinate aiCoord = null;
-
-            if (isWin || isLose) {
-                // Odpowiedź w formacie: END|r,c|HIT/SUNK/MISS
-                aiCoord = parseCoordinate(parts[1]); // dodaj to!
-                aiHit = parts[2].equals("HIT") || parts[2].equals("SUNK");
-                aiSankShip = parts[2].equals("SUNK");
-            } else {
-                // Odpowiedź w formacie: HIT|r,c|HIT|SUNK
-                aiCoord = parseCoordinate(parts[1]);
-                aiHit = parts[2].equals("HIT");
-                aiSankShip = parts.length > 3 && parts[3].equals("SUNK");
-                playerHit = parts[0].equals("HIT") || parts[0].equals("SUNK");
-                playerSankShip = parts[0].equals("SUNK");
+            if (response.startsWith("END")) {
+                button.setBackground(Color.RED);
+                button.setEnabled(false);
+                statusLabel.setText("🎉 Wygrałeś!");
+                gameRunning = false;
+                disableAllEnemyButtons();
+                connection.close();
+                saveResultToFile("Gracz wygrał");
+                return;
             }
 
-            // Kolorowanie trafionego/przestrzelonego pola na planszy przeciwnika
+            String[] parts = response.split("\\|");
+
+            boolean isLose = parts[0].equals("LOSE");
+
+            boolean playerHit = parts[0].equals("HIT") || parts[0].equals("SUNK");
+            boolean playerSankShip = parts[0].equals("SUNK");
+
+            Coordinate aiCoord = parseCoordinate(parts[1]);
+            boolean aiHit = parts[2].equals("HIT");
+            boolean aiSankShip = parts.length > 3 && parts[3].equals("SUNK");
+
             button.setBackground(playerHit ? Color.RED : Color.BLUE);
             button.setEnabled(false);
 
-            // Jeśli AI jeszcze gra, przetwarzamy jego ruch
             if (aiCoord != null) {
                 JButton target = playerButtons[aiCoord.getRow()][aiCoord.getCol()];
                 Color currentColor = target.getBackground();
@@ -133,41 +136,34 @@ public class GameWindow extends JFrame {
                 }
             }
 
-            // Aktualizacja statusu
             if (playerSankShip && aiSankShip) {
-                statusLabel.setText("🚢 Zatopiłeś statek! Ale przeciwnik też zatopił.");
+                statusLabel.setText("Zatopiłeś statek! Ale przeciwnik też zatopił.");
             } else if (playerSankShip) {
-                statusLabel.setText("🚢 Zatopiłeś statek przeciwnika!");
+                statusLabel.setText("Zatopiłeś statek przeciwnika!");
             } else if (aiSankShip) {
-                statusLabel.setText("💀 Przeciwnik zatopił Twój statek!");
+                statusLabel.setText("Przeciwnik zatopił Twój statek!");
             } else if (playerHit && aiHit) {
-                statusLabel.setText("🎯 Trafiłeś! Ale przeciwnik też trafił.");
+                statusLabel.setText("Trafiłeś! Ale przeciwnik też trafił.");
             } else if (playerHit) {
-                statusLabel.setText("🎯 Trafiłeś! Przeciwnik spudłował.");
+                statusLabel.setText("Trafiłeś! Przeciwnik spudłował.");
             } else if (aiHit) {
-                statusLabel.setText("💥 Spudłowałeś. Przeciwnik trafił!");
+                statusLabel.setText("Spudłowałeś. Przeciwnik trafił!");
             } else {
-                statusLabel.setText("😐 Pudło z obu stron.");
+                statusLabel.setText("Pudło z obu stron.");
             }
 
-            // Zakończenie gry
-            if (isWin) {
-                statusLabel.setText("🎉 Wygrałeś!");
+            if (isLose) {
+                statusLabel.setText("Przegrałeś!");
                 disableAllEnemyButtons();
+                gameRunning = false;
                 connection.close();
-            } else if (isLose) {
-                statusLabel.setText("💀 Przegrałeś!");
-                disableAllEnemyButtons();
-                connection.close();
+                saveResultToFile("Komputer wygrał");
             }
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Błąd komunikacji z serwerem.", "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
-
 
     private Coordinate parseCoordinate(String coordStr) {
         String[] parts = coordStr.split(",");
@@ -190,4 +186,35 @@ public class GameWindow extends JFrame {
             default -> button.setBackground(null);
         }
     }
+
+
+    private void saveResultToFile(String result) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("wynik.txt", true))) {
+            String timestamp = java.time.LocalDateTime.now().toString();
+            writer.println(timestamp + " – " + result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startGameTimer() {
+        new Thread(() -> {
+            int seconds = 0;
+            while (gameRunning) {
+                int mins = seconds / 60;
+                int secs = seconds % 60;
+                String time = String.format("⏱️ Czas gry: %02d:%02d", mins, secs);
+                SwingUtilities.invokeLater(() -> timerLabel.setText(time));
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                seconds++;
+            }
+        }).start();
+    }
+
+
 }

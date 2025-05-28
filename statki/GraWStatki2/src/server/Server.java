@@ -32,7 +32,6 @@ public class Server {
 
                 System.out.println("Połączono z klientem: " + clientSocket.getInetAddress());
 
-                // Odbieranie statków gracza
                 List<Ship> playerShips = new ArrayList<>();
                 String shipLine;
                 while ((shipLine = in.readLine()) != null && !shipLine.equals("READY")) {
@@ -59,13 +58,10 @@ public class Server {
 
                     String result = hit ? (shipSunk ? "SUNK" : "HIT") : "MISS";
                     if (aiDefeated) {
-                        String endResponse = String.format("END|%d,%d|%s",
-                                row, col, hit ? (ai.getOwnBoard().wasLastShipSunk() ? "SUNK" : "HIT") : "MISS");
-                        out.println(endResponse);
+                        out.println("END");
                         break;
                     }
 
-                    // AI STRZELA
                     Coordinate aiShot = ai.makeMove();
                     boolean aiHit = playerBoard.receiveShot(aiShot);
                     boolean aiSankShip = playerBoard.wasLastShipSunk();

@@ -3,9 +3,9 @@ package model;
 import java.util.*;
 
 public class Board {
-    private int size;
-    private Map<Coordinate, CellState> grid;
-    private List<Ship> ships;
+    private final int size;
+    private final Map<Coordinate, CellState> grid;
+    private final List<Ship> ships;
     private Ship lastHitShip = null;
     public Board(int size) {
         this.size = size;
@@ -39,10 +39,9 @@ public class Board {
     public boolean placeShip(Ship ship) {
         for (Coordinate coord : ship.getPositions()) {
             if (!grid.containsKey(coord) || grid.get(coord) != CellState.EMPTY) {
-                return false; // Kolizja lub poza planszą
+                return false;
             }
         }
-        // Jeśli miejsce wolne, umieszczamy statek
         for (Coordinate coord : ship.getPositions()) {
             grid.put(coord, CellState.SHIP);
         }
