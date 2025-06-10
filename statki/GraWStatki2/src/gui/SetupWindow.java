@@ -16,7 +16,7 @@ public class SetupWindow extends JFrame implements KeyListener {
     private Board playerBoard = new Board(boardSize);
     private JLabel statusLabel;
     private int currentShipSize = 3;
-    private List<Integer> shipsToPlace = List.of(3, 2, 1);
+    private List<Integer> shipsToPlace = List.of(4, 3, 2, 1);
     private int shipIndex = 0;
     private boolean horizontal = true;
 
@@ -76,6 +76,7 @@ public class SetupWindow extends JFrame implements KeyListener {
         int length = shipsToPlace.get(shipIndex);
         List<Coordinate> coords = new ArrayList<>();
 
+        // obliczanie pozycji statku w zaleznosci od orientacji
         for (int i = 0; i < length; i++) {
             int r = row + (horizontal ? 0 : i);
             int c = col + (horizontal ? i : 0);
@@ -87,6 +88,7 @@ public class SetupWindow extends JFrame implements KeyListener {
             coords.add(new Coordinate(r, c));
         }
 
+        // proba rozmieszczenia statku na planszy
         Ship ship = new Ship(coords);
         if (playerBoard.placeShip(ship)) {
             for (Coordinate coord : coords) {
@@ -95,13 +97,16 @@ public class SetupWindow extends JFrame implements KeyListener {
             }
 
             shipIndex++;
+
+            // wszystkie statki ustawione, gra się ropzoczyna
             if (shipIndex >= shipsToPlace.size()) {
                 statusLabel.setText("Wszystkie statki ustawione!");
                 SwingUtilities.invokeLater(() -> {
-                    dispose();
+                    dispose(); // zamkniecie okna ustawiania
                     new GameWindow(playerBoard); // Start gry z ustawioną planszą
                 });
             } else {
+                // informacja o kolejnym statku do ustawienia
                 currentShipSize = shipsToPlace.get(shipIndex);
                 statusLabel.setText("Ustaw statek długości " + currentShipSize);
             }

@@ -13,7 +13,7 @@ public class SetupWindow extends JFrame {
     private Board playerBoard = new Board(boardSize);
     private JLabel statusLabel;
     private int currentShipSize = 3;
-    private List<Integer> shipsToPlace = List.of(3, 2, 1); // przykładowa flota
+    private List<Integer> shipsToPlace = List.of(4, 3, 2, 1); // przykładowa flota
     private int shipIndex = 0;
     private boolean horizontal = true;
 

@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 
 public class GameWindow extends JFrame {
     private final int boardSize = 10;
-    private final int SIZE = 11; // 10 + headers
+    private final int SIZE = 11;
     private JButton[][] playerButtons = new JButton[boardSize][boardSize];
     private JButton[][] enemyButtons = new JButton[boardSize][boardSize];
     private ClientConnection connection;
@@ -27,6 +27,7 @@ public class GameWindow extends JFrame {
         setResizable(false);
 
         try {
+            // polaczenie z serwerem i przeslanie rozmieszczenia statkow
             connection = new ClientConnection("localhost", 12345);
             connection.sendPlayerShips(playerBoard.getShips());
         } catch (IOException e) {
@@ -43,7 +44,7 @@ public class GameWindow extends JFrame {
         content.add(boardsPanel, BorderLayout.CENTER);
 
         statusLabel = new JLabel("Wybierz pole, aby strzelić.", SwingConstants.CENTER);
-        timerLabel = new JLabel("⏱️ Czas gry: 00:00", SwingConstants.CENTER);
+        timerLabel = new JLabel("Czas gry: 00:00", SwingConstants.CENTER);
         content.add(timerLabel, BorderLayout.NORTH);
         content.add(statusLabel, BorderLayout.SOUTH);
 
@@ -61,6 +62,7 @@ public class GameWindow extends JFrame {
         JPanel gridPanel = new JPanel(new GridLayout(SIZE, SIZE));
         String[] letters = {"", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
 
+        // tworzenie siatki planszy
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 if (row == 0 && col == 0) {
@@ -97,14 +99,16 @@ public class GameWindow extends JFrame {
         return boardPanel;
     }
 
+    // strzał gracza w dane pole planszy przeciwnika
     private void handlePlayerShot(int row, int col, JButton button) {
         try {
-            String response = connection.sendShot(row, col);
+            String response = connection.sendShot(row, col); // wysłanie strzału
 
             if (response.startsWith("END")) {
+                // zwyciestwo gracza
                 button.setBackground(Color.RED);
                 button.setEnabled(false);
-                statusLabel.setText("🎉 Wygrałeś!");
+                statusLabel.setText("Wygrałeś!");
                 gameRunning = false;
                 disableAllEnemyButtons();
                 connection.close();
@@ -149,9 +153,10 @@ public class GameWindow extends JFrame {
             } else if (aiHit) {
                 statusLabel.setText("Spudłowałeś. Przeciwnik trafił!");
             } else {
-                statusLabel.setText("Pudło z obu stron.");
+                statusLabel.setText("Pudło");
             }
 
+            // gracz przegrał
             if (isLose) {
                 statusLabel.setText("Przegrałeś!");
                 disableAllEnemyButtons();
@@ -187,7 +192,7 @@ public class GameWindow extends JFrame {
         }
     }
 
-
+    // zapisuje wynik gry do pliku wynik.txt
     private void saveResultToFile(String result) {
         try (PrintWriter writer = new PrintWriter(new FileWriter("wynik.txt", true))) {
             String timestamp = java.time.LocalDateTime.now().toString();
@@ -197,13 +202,14 @@ public class GameWindow extends JFrame {
         }
     }
 
+    // ustawia licznik czasu gry w osobnym wątku
     private void startGameTimer() {
         new Thread(() -> {
             int seconds = 0;
             while (gameRunning) {
                 int mins = seconds / 60;
                 int secs = seconds % 60;
-                String time = String.format("⏱️ Czas gry: %02d:%02d", mins, secs);
+                String time = String.format("Czas gry: %02d:%02d", mins, secs);
                 SwingUtilities.invokeLater(() -> timerLabel.setText(time));
 
                 try {

@@ -16,7 +16,7 @@ public class ClientConnection {
 
     public String sendShot(int row, int col) throws IOException {
         out.println(row + "," + col);
-        return in.readLine(); // HIT / MISS / END
+        return in.readLine();
     }
 
     public void close() {

@@ -21,7 +21,7 @@ public class Game {
         List<Ship> fleet = createFleet();
 
         System.out.println("\nRozmieszczanie statków gracza...");
-        human.placeShips(cloneFleet(fleet)); // później GUI, teraz puste
+        human.placeShips(cloneFleet(fleet));
 
         System.out.println("Rozmieszczanie statków komputera...");
         computer.placeShips(cloneFleet(fleet));

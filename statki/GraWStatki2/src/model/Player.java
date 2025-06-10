@@ -26,10 +26,12 @@ public abstract class Player {
         return opponentViewBoard;
     }
 
+    // Abstrakcyjna metoda, którą musi zaimplementować każda klasa dziedzicząca – wykonanie ruchu (strzału)
     public abstract Coordinate makeMove();
 
+    // Aktualizuje planszę widoku przeciwnika na podstawie wyniku ostatniego strzału
     public void handleShotResult(Coordinate coord, boolean wasHit) {
-        opponentViewBoard.markShot(coord, wasHit); // metoda pomocnicza, dodamy niżej
+        opponentViewBoard.markShot(coord, wasHit);
     }
 
     public abstract void placeShips(List<Ship> fleet);

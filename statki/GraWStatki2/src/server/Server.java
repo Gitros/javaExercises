@@ -13,8 +13,10 @@ public class Server {
     private final List<Ship> fleet;
     private Board playerBoard;
 
+    // Konstruktor tworzy domyślną flotę i ustawia ją dla AI
     public Server() {
         fleet = List.of(
+                new Ship(Collections.nCopies(4, new Coordinate(0, 0))),
                 new Ship(Collections.nCopies(3, new Coordinate(0, 0))),
                 new Ship(Collections.nCopies(2, new Coordinate(0, 0))),
                 new Ship(Collections.nCopies(1, new Coordinate(0, 0)))
@@ -32,17 +34,20 @@ public class Server {
 
                 System.out.println("Połączono z klientem: " + clientSocket.getInetAddress());
 
+                // Odbieranie statków gracza od klienta w formacie tekstowym
                 List<Ship> playerShips = new ArrayList<>();
                 String shipLine;
                 while ((shipLine = in.readLine()) != null && !shipLine.equals("READY")) {
                     playerShips.add(parseShip(shipLine));
                 }
 
+                // Inicjalizacja planszy gracza i rozmieszczenie jego statków
                 playerBoard = new Board(boardSize);
                 for (Ship ship : playerShips) {
                     playerBoard.placeShip(ship);
                 }
 
+                // Główny strumień gry
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     if (inputLine.equals("END")) break;
@@ -62,6 +67,7 @@ public class Server {
                         break;
                     }
 
+                    // Strzał ai w gracza
                     Coordinate aiShot = ai.makeMove();
                     boolean aiHit = playerBoard.receiveShot(aiShot);
                     boolean aiSankShip = playerBoard.wasLastShipSunk();
@@ -91,6 +97,7 @@ public class Server {
         }
     }
 
+    // Tworzy głęboką kopię floty (kopie statków z kopiami pozycji)
     private List<Ship> cloneFleet(List<Ship> original) {
         List<Ship> copy = new ArrayList<>();
         for (Ship s : original) {

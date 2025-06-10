@@ -16,18 +16,18 @@ public class GameWindow extends JFrame {
     private JLabel statusLabel;
 
     public GameWindow(Board playerBoard) {
-        setTitle("Gra w Statki – Klient");
+        setTitle("Gra w Statki");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         try {
-            connection = new ClientConnection("localhost", 12345); // 🔌 Połączenie z serwerem
+            connection = new ClientConnection("localhost", 12345);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Nie udało się połączyć z serwerem.", "Błąd", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
-        // Twój panel
+        // Panel gracza
         JPanel playerPanel = createBoardPanel(playerButtons, false, playerBoard);
         playerPanel.setBorder(BorderFactory.createTitledBorder("Twoja plansza"));
 
@@ -79,7 +79,7 @@ public class GameWindow extends JFrame {
 
             if (parts[0].equals("END")) {
                 button.setBackground(Color.RED);
-                statusLabel.setText("🎉 Wygrałeś!");
+                statusLabel.setText("Wygrałeś!");
                 disableAllEnemyButtons();
                 connection.close();
                 return;
@@ -89,7 +89,7 @@ public class GameWindow extends JFrame {
                 Coordinate aiCoord = parseCoordinate(parts[1]);
                 JButton aiButton = playerButtons[aiCoord.getRow()][aiCoord.getCol()];
                 aiButton.setBackground(Color.RED);
-                statusLabel.setText("💀 Przegrałeś!");
+                statusLabel.setText("Przegrałeś!");
                 disableAllEnemyButtons();
                 connection.close();
                 return;
